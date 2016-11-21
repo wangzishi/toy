@@ -16,7 +16,6 @@ const bodyParser = require("koa-bodyparser");
 // import { APP } from '../configs/app';
 // import * as _ from 'lodash';
 const isEmpty = require('lodash.isempty');
-let options = { nodir: true, ignore: '**/*(index.js|*.map)' };
 let bodyMetadataKey = Symbol('body');
 let pathMetadataKey = Symbol('path');
 let queryMetadataKey = Symbol('query');
@@ -34,8 +33,8 @@ var Method;
 })(Method || (Method = {}));
 ;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = app => ({
-    listen: (port) => glob(`${__dirname}/**/*`, options, (err, files) => {
+exports.default = (app, options) => ({
+    listen: (port) => glob(`${options.controllerRoot}/**/*`, { nodir: true, ignore: '**/*(index.js|*.map)' }, (err, files) => {
         // load all controller definition into memory
         files.forEach(file => require(file));
         controllers.forEach((controller) => {

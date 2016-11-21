@@ -1,5 +1,7 @@
 import 'reflect-metadata';
-declare var _default: (app: any) => {
+declare var _default: (app: any, options: {
+    controllerRoot: string;
+}) => {
     listen: (port: number) => void;
 };
 export default _default;
