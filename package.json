@@ -1,0 +1,41 @@
+{
+  "name": "@sheencity/toy",
+  "version": "0.0.1",
+  "description": "A framework",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WangZishi/toy.git"
+  },
+  "keywords": [
+    "koa"
+  ],
+  "author": "WangZishi <ynh.2@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WangZishi/toy/issues"
+  },
+  "homepage": "https://github.com/WangZishi/toy#readme",
+  "devDependencies": {
+    "@types/node": "^6.0.48",
+    "@types/glob": "^5.0.30",
+    "@types/koa-bodyparser": "^3.0.20",
+    "@types/koa-compose": "^3.0.30",
+    "@types/koa-router": "^7.0.21",
+    "tslint": "^4.0.1",
+    "typescript": "^2.0.10"
+  },
+  "dependencies": {
+    "glob": "^7.1.1",
+    "koa-bodyparser": "^2.3.0",
+    "koa-compose": "^2.5.1",
+    "koa-router": "^5.4.0",
+    "lodash.isempty": "^4.4.0",
+    "reflect-metadata": "^0.1.8"
+  },
+  "typings": "dist/index.d.ts"
+}
