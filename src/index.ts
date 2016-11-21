@@ -12,8 +12,6 @@ import * as compose from 'koa-compose';
 // import * as _ from 'lodash';
 const isEmpty = require('lodash.isempty');
 
-let options: glob.IOptions = { nodir: true, ignore: '**/*(index.js|*.map)' };
-
 let bodyMetadataKey = Symbol('body');
 let pathMetadataKey = Symbol('path');
 let queryMetadataKey = Symbol('query');
@@ -29,8 +27,10 @@ type TPathParameterMetadata = { parameterIndex: number, pathParam: string };
 type TQueryParameterMetadata = { parameterIndex: number, queryName: string };
 type THeaderParameterMetadata = { parameterIndex: number, headerParam: string };
 
-export default app => ({
-    listen: (port: number) => glob(`${__dirname}/**/*`, options, (err, files: string[]) => {
+type TOptions = { controllerRoot: string };
+
+export default (app, options: TOptions) => ({
+    listen: (port: number) => glob(`${options.controllerRoot}/**/*`, { nodir: true, ignore: '**/*(index.js|*.map)' }, (err, files: string[]) => {
 
         // load all controller definition into memory
         files.forEach(file => require(file));
