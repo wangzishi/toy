@@ -4,7 +4,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 require("reflect-metadata");
@@ -139,21 +139,21 @@ exports.Body = (target, propertyKey, parameterIndex) => {
 };
 exports.Path = (pathParam) => {
     return (target, propertyKey, parameterIndex) => {
-        let pathParams = Reflect.getMetadata(pathMetadataKey, target) || [];
+        let pathParams = Reflect.getMetadata(pathMetadataKey, target, propertyKey) || [];
         pathParams.push({ parameterIndex, pathParam });
         Reflect.defineMetadata(pathMetadataKey, pathParams, target, propertyKey);
     };
 };
 exports.Query = (queryName) => {
     return (target, propertyKey, parameterIndex) => {
-        let queryParams = Reflect.getMetadata(queryMetadataKey, target) || [];
+        let queryParams = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
         queryParams.push({ parameterIndex, queryName });
         Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
     };
 };
 exports.Header = (headerParam) => {
     return (target, propertyKey, parameterIndex) => {
-        let headerParams = Reflect.getMetadata(headerMetadataKey, target) || [];
+        let headerParams = Reflect.getMetadata(headerMetadataKey, target, propertyKey) || [];
         headerParams.push({ parameterIndex, headerParam });
         Reflect.defineMetadata(headerMetadataKey, headerParams, target, propertyKey);
     };
