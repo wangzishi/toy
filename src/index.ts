@@ -87,16 +87,18 @@ export default (app, options: TOptions) => ({
                         headerMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.request.headers[metadata.headerParam]);
                     }
 
-                    let result: any;// | Promise<any> | Sheencity.qrcode.shared.Result<any>;
+                    let result: any; // | Promise<any> | Sheencity.qrcode.shared.Result<any>;
                     try {
 
                         result = await instance[metadata.methodName].apply(this, argvs);
                         ctx.body = { success: true, value: result };
 
                     } catch (err) {
+
                         console.error(err);
                         ctx.status = err.status || 500;
                         ctx.body = { success: false, reason: err.message || err };
+
                     }
 
                 });
@@ -145,7 +147,7 @@ export let Body = (target: Object, propertyKey: string | symbol, parameterIndex:
 
 export let Path = (pathParam: string): ParameterDecorator => {
     return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-        let pathParams: TPathParameterMetadata[] = Reflect.getMetadata(pathMetadataKey, target) || [];
+        let pathParams: TPathParameterMetadata[] = Reflect.getMetadata(pathMetadataKey, target, propertyKey) || [];
         pathParams.push({ parameterIndex, pathParam });
         Reflect.defineMetadata(pathMetadataKey, pathParams, target, propertyKey);
     };
@@ -153,7 +155,7 @@ export let Path = (pathParam: string): ParameterDecorator => {
 
 export let Query = (queryName: string): ParameterDecorator => {
     return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-        let queryParams: TQueryParameterMetadata[] = Reflect.getMetadata(queryMetadataKey, target) || [];
+        let queryParams: TQueryParameterMetadata[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
         queryParams.push({ parameterIndex, queryName });
         Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
     };
@@ -161,7 +163,7 @@ export let Query = (queryName: string): ParameterDecorator => {
 
 export let Header = (headerParam: string): ParameterDecorator => {
     return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-        let headerParams: THeaderParameterMetadata[] = Reflect.getMetadata(headerMetadataKey, target) || [];
+        let headerParams: THeaderParameterMetadata[] = Reflect.getMetadata(headerMetadataKey, target, propertyKey) || [];
         headerParams.push({ parameterIndex, headerParam });
         Reflect.defineMetadata(headerMetadataKey, headerParams, target, propertyKey);
     };
