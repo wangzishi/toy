@@ -7,4 +7,13 @@ export declare class Page<T> {
     readonly length: number;
     readonly capacity: number;
     readonly current: number;
+    toJSON(): {
+        total: number;
+        offset: number;
+        limit: number;
+        length: number;
+        capacity: number;
+        current: number;
+        contents: T[];
+    };
 }

@@ -12,6 +12,8 @@ require("reflect-metadata");
 const glob = require("glob");
 const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
+var page_1 = require("./page");
+exports.Page = page_1.Page;
 // import * as Convert from 'koa-convert';
 // import * as jwt from 'koa-jwt';
 // import { APP } from '../configs/app';

@@ -3,6 +3,7 @@
 /// <reference types="koa-bodyparser" />
 import 'reflect-metadata';
 import * as Koa from 'koa';
+export { Page } from './page';
 export declare type TOptions = {
     controllerRoot: string;
 };
