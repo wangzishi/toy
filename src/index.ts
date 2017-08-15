@@ -4,6 +4,7 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 import * as compose from 'koa-compose';
 import * as Koa from 'koa';
+export { Page } from './page';
 // import * as Convert from 'koa-convert';
 // import * as jwt from 'koa-jwt';
 
