@@ -25,15 +25,17 @@
     "@types/koa-bodyparser": "^3.0.20",
     "@types/koa-compose": "^3.0.30",
     "@types/koa-router": "^7.0.21",
-    "@types/node": "^6.0.48",
-    "tslint": "^4.0.1",
+    "@types/node": "^8.0.20",
+    "@types/koa": "^2.0.39",
+    "tslint": "^5.6.0",
     "typescript": "^2.0.10"
   },
   "dependencies": {
     "glob": "^7.1.1",
-    "koa-bodyparser": "next",
-    "koa-compose": "^2.5.1",
-    "koa-router": "next",
+    "koa": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-compose": "^4.0.0",
+    "koa-router": "^7.2.1",
     "lodash.isempty": "^4.4.0",
     "reflect-metadata": "^0.1.8"
   },

@@ -3,7 +3,7 @@ import * as glob from 'glob';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 import * as compose from 'koa-compose';
-
+import * as Koa from 'koa';
 // import * as Convert from 'koa-convert';
 // import * as jwt from 'koa-jwt';
 
@@ -20,112 +20,114 @@ let prefixMetadataKey = Symbol('prefix');
 let contextMetadataKey = Symbol('context');
 let headerMetadataKey = Symbol('header');
 
-enum Method { GET, POST, PUT, PATCH, DELETE };
+enum Method { GET, POST, PUT, PATCH, DELETE }
 type TRouteMetadata = { requestMethod: Method, methodName: string, path: string };
 type TParameterMetadata = { parameterIndex: number };
 type TPathParameterMetadata = { parameterIndex: number, pathParam: string };
-type TQueryParameterMetadata = { parameterIndex: number, queryName: string };
+type TQueryParameterMetadata = { parameterIndex: number, queryName: string, paramType: Function };
 type THeaderParameterMetadata = { parameterIndex: number, headerParam: string };
 
-type TOptions = { controllerRoot: string };
+export type TOptions = { controllerRoot: string };
 
-export default (app, options: TOptions) => ({
-    listen: (port: number) => glob(`${options.controllerRoot}/**/*`, { nodir: true, ignore: '**/*(index.js|*.map)' }, (err, files: string[]) => {
+export default function (this: any, app: Koa, options: TOptions) {
+    return {
+        listen: (port: number) => glob(`${options.controllerRoot}/**/*`, { nodir: true, ignore: '**/*(index.js|*.map)' }, (err, files: string[]) => {
 
-        // load all controller definition into memory
-        files.forEach(file => require(file));
+            // load all controller definition into memory
+            files.forEach(file => require(file));
 
-        controllers.forEach((controller) => {
-            let instance = new controller();
-            let prefix: string = Reflect.getOwnMetadata(prefixMetadataKey, controller);
-            let router = new Router({ prefix });
-            let routersMetadataList: TRouteMetadata[] = Reflect.getMetadata(routeMetadataKey, instance);
+            controllers.forEach((controller) => {
+                let instance = new controller();
+                let prefix: string = Reflect.getOwnMetadata(prefixMetadataKey, controller);
+                let router = new Router({ prefix });
+                let routersMetadataList: TRouteMetadata[] = Reflect.getMetadata(routeMetadataKey, instance);
 
-            routersMetadataList.forEach(metadata => {
-                let middlewares = [];
-                let argvs: any[] = [];
-                let requestMethod: string;
-                let bodyMetadata: TParameterMetadata = Reflect.getMetadata(bodyMetadataKey, instance, metadata.methodName);
-                let pathMetadata: TPathParameterMetadata[] = Reflect.getMetadata(pathMetadataKey, instance, metadata.methodName);
-                let queryMetadata: TQueryParameterMetadata[] = Reflect.getMetadata(queryMetadataKey, instance, metadata.methodName);
-                let contextMetadata: TParameterMetadata = Reflect.getMetadata(contextMetadataKey, instance, metadata.methodName);
-                let headerMetadata: THeaderParameterMetadata[] = Reflect.getMetadata(headerMetadataKey, instance, metadata.methodName);
+                routersMetadataList.forEach(metadata => {
+                    let middlewares = [];
+                    let argvs: any[] = [];
+                    let requestMethod: 'get' | 'put' | 'post' | 'patch' | 'delete';
+                    let bodyMetadata: TParameterMetadata = Reflect.getMetadata(bodyMetadataKey, instance, metadata.methodName);
+                    let pathMetadata: TPathParameterMetadata[] = Reflect.getMetadata(pathMetadataKey, instance, metadata.methodName);
+                    let queryMetadata: TQueryParameterMetadata[] = Reflect.getMetadata(queryMetadataKey, instance, metadata.methodName);
+                    let contextMetadata: TParameterMetadata = Reflect.getMetadata(contextMetadataKey, instance, metadata.methodName);
+                    let headerMetadata: THeaderParameterMetadata[] = Reflect.getMetadata(headerMetadataKey, instance, metadata.methodName);
 
-                switch (metadata.requestMethod) {
-                    case Method.GET: requestMethod = 'get'; break;
-                    case Method.PUT: requestMethod = 'put'; break;
-                    case Method.POST: requestMethod = 'post'; break;
-                    case Method.PATCH: requestMethod = 'pacth'; break;
-                    case Method.DELETE: requestMethod = 'delete'; break;
-                    default: break;
-                }
-
-                router[requestMethod](metadata.path, async (ctx: Router.IRouterContext, next) => {
-                    // @Body
-                    if (!isEmpty(bodyMetadata)) {
-                        await bodyParser()(ctx, next);
-                        argvs[bodyMetadata.parameterIndex] = ctx.request['body'];
+                    switch (metadata.requestMethod) {
+                        case Method.GET: requestMethod = 'get'; break;
+                        case Method.PUT: requestMethod = 'put'; break;
+                        case Method.POST: requestMethod = 'post'; break;
+                        case Method.PATCH: requestMethod = 'patch'; break;
+                        case Method.DELETE: requestMethod = 'delete'; break;
+                        default: requestMethod = 'get'; break;
                     }
+                    // router
+                    router[requestMethod](metadata.path, async (ctx, next) => {
+                        // @Body
+                        if (!isEmpty(bodyMetadata)) {
+                            await bodyParser()(ctx, next);
+                            argvs[bodyMetadata.parameterIndex] = ctx.request['body'];
+                        }
 
-                    // @Context
-                    if (!isEmpty(contextMetadata)) {
-                        argvs[contextMetadata.parameterIndex] = ctx;
-                    }
+                        // @Context
+                        if (!isEmpty(contextMetadata)) {
+                            argvs[contextMetadata.parameterIndex] = ctx;
+                        }
 
-                    // @Path()
-                    if (!isEmpty(pathMetadata)) {
-                        pathMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.params[metadata.pathParam]);
-                    }
+                        // @Path()
+                        if (!isEmpty(pathMetadata)) {
+                            pathMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.params[metadata.pathParam]);
+                        }
 
-                    // @Query()
-                    if (!isEmpty(queryMetadata)) {
-                        queryMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.query[metadata.queryName]);
-                    }
+                        // @Query()
+                        if (!isEmpty(queryMetadata)) {
+                            queryMetadata.forEach(metadata => {
+                                let val = ctx.query[metadata.queryName];
+                                val = metadata.paramType === Number ? parseFloat(val) : val;
 
-                    // @Header()
-                    if (!isEmpty(headerMetadata)) {
-                        headerMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.request.headers[metadata.headerParam]);
-                    }
+                                argvs[metadata.parameterIndex] = val;
+                            });
+                        }
 
-                    let result: any; // | Promise<any> | Sheencity.qrcode.shared.Result<any>;
-                    try {
+                        // @Header()
+                        if (!isEmpty(headerMetadata)) {
+                            headerMetadata.forEach(metadata => argvs[metadata.parameterIndex] = ctx.request.headers[metadata.headerParam]);
+                        }
 
-                        result = await instance[metadata.methodName].apply(this, argvs);
-                        ctx.body = { success: true, value: result };
+                        let result: any; // | Promise<any> | Sheencity.qrcode.shared.Result<any>;
+                        try {
+                            // this
+                            result = await instance[metadata.methodName].apply(this, argvs);
+                            ctx.body = { success: true, value: result };
 
-                    } catch (err) {
+                        } catch (err) {
 
-                        console.error(err);
-                        ctx.status = err.status || 500;
-                        ctx.body = { success: false, reason: err.message || err };
+                            console.error(err);
+                            ctx.status = err.status || 500;
+                            ctx.body = { success: false, reason: err.message || err };
 
-                    }
+                        }
 
+                    });
                 });
+
+
+                app.use(router.routes());
             });
 
-
-            app.use(router.routes());
-        });
-
-        app.listen(port);
-    })
-});
-
-// interface IFuntion<T> extends Function {
-//     new (...args: any[]): T;
-// }
+            app.listen(port);
+        })
+    };
+}
 
 let controllers = new Set();
 
-export function Controller(target) {
+export function Controller(target: any) {
     controllers.add(target);
-};
+}
 
 export function Prefix(path: string) {
     return Reflect.metadata(prefixMetadataKey, path);
-};
-
+}
 
 function methodBuilder(method: Method) {
     return (path: string) => (target: Object, prop: string, desc: TypedPropertyDescriptor<any>) => {
@@ -156,7 +158,9 @@ export let Path = (pathParam: string): ParameterDecorator => {
 export let Query = (queryName: string): ParameterDecorator => {
     return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         let queryParams: TQueryParameterMetadata[] = Reflect.getMetadata(queryMetadataKey, target, propertyKey) || [];
-        queryParams.push({ parameterIndex, queryName });
+        let paramType = Reflect.getMetadata('design:paramtypes', target, propertyKey)[parameterIndex];
+        queryParams.push({ parameterIndex, queryName, paramType });
+        console.log(Reflect.getMetadata('design:paramtypes', target));
         Reflect.defineMetadata(queryMetadataKey, queryParams, target, propertyKey);
     };
 };

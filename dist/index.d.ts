@@ -1,14 +1,18 @@
+/// <reference types="koa" />
+/// <reference types="koa-router" />
+/// <reference types="koa-bodyparser" />
 import 'reflect-metadata';
-declare var _default: (app: any, options: {
+import * as Koa from 'koa';
+export declare type TOptions = {
     controllerRoot: string;
-}) => {
+};
+export default function (this: any, app: Koa, options: TOptions): {
     listen: (port: number) => void;
 };
-export default _default;
 export declare function Controller(target: any): void;
 export declare function Prefix(path: string): {
     (target: Function): void;
-    (target: Object, targetKey: string | symbol): void;
+    (target: Object, propertyKey: string | symbol): void;
 };
 export declare let Get: (path: string) => MethodDecorator;
 export declare let Put: (path: string) => MethodDecorator;
